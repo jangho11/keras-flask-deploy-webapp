@@ -98,7 +98,7 @@ def predict():
         result = ", ".join(formatted_results)
         
         # Send the processed result and probability back to the frontend
-        return jsonify(result=result, probability=pred_proba))
+        return jsonify(result=result, probability=pred_proba)
 
     return None
 
