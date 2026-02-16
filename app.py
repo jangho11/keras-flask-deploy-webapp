@@ -10,7 +10,8 @@ from gevent.pywsgi import WSGIServer
 import tensorflow as tf
 from tensorflow import keras
 
-from tensorflow.keras.applications.imagenet_utils import preprocess_input, decode_predictions
+#from tensorflow.keras.applications.imagenet_utils import preprocess_input, decode_predictions
+from tensorflow.keras.applications.imagenet_utils import decode_predictions
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
@@ -27,8 +28,11 @@ app = Flask(__name__)
 # Check https://keras.io/applications/
 # or https://www.tensorflow.org/api_docs/python/tf/keras/applications
 
-from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
-model = MobileNetV2(weights='imagenet')
+#from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
+#model = MobileNetV2(weights='imagenet')
+# instead of MobileNetV2, use ResNet50V2 [change 1]
+from tensorflow.keras.applications.resnet_v2 import ResNet50V2, preprocess_input as resnet_preprocess
+model = ResNet50V2(weights='imagenet')
 
 print('Model loaded. Check http://127.0.0.1:5000/')
 
@@ -52,8 +56,10 @@ def model_predict(img, model):
 
     # Be careful how your trained model deals with the input
     # otherwise, it won't make correct prediction!
-    x = preprocess_input(x, mode='tf')
-
+    
+    #x = preprocess_input(x, mode='tf') -> [change 2]
+    x = resnet_preprocess(x)
+    
     preds = model.predict(x)
     return preds
 
