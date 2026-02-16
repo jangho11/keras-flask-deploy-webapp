@@ -84,6 +84,9 @@ def predict():
 
         # Process your result for human
         pred_proba = "{:.3f}".format(np.amax(preds))    # Max probability
+
+        # This line was missing. It converts model numbers to Top-3 readable labels.
+        pred_classes = decode_predictions(preds, top=3)
         
         #Format the Top-3 results into a readable string
         formatted_results = []
