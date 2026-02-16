@@ -84,13 +84,21 @@ def predict():
 
         # Process your result for human
         pred_proba = "{:.3f}".format(np.amax(preds))    # Max probability
-        pred_class = decode_predictions(preds, top=1)   # ImageNet Decode
-
-        result = str(pred_class[0][0][1])               # Convert to string
-        result = result.replace('_', ' ').capitalize()
         
-        # Serialize the result, you can add additional fields
-        return jsonify(result=result, probability=pred_proba)
+        #Format the Top-3 results into a readable string
+        formatted_results = []
+        for i in range(3):
+            # Extract the label, replace underscores with spaces, and capitalize
+            label = pred_classes[0][i][1].replace('_', ' ').capitalize()
+            # Convert probability to a percentage string (e.g., 85.2%)
+            score = "{:.1f}%".format(pred_classes[0][i][2] * 100)
+            formatted_results.append(f"{label} ({score})")
+
+        # Join all results into a single string separated by commas
+        result = ", ".join(formatted_results)
+        
+        # Send the processed result and probability back to the frontend
+        return jsonify(result=result, probability=pred_proba))
 
     return None
 
