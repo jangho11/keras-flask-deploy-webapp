@@ -47,10 +47,12 @@ MODEL_PATH = 'models/your_model.h5'
 
 
 def model_predict(img, model):
-    img = img.resize((224, 224))
+    width, height = model.input_shape[1], model.input_shape[2]
+    img = img.resize((width, height))
 
     # Preprocessing the image
     x = image.img_to_array(img)
+    print(x.shape)
     # x = np.true_divide(x, 255)
     x = np.expand_dims(x, axis=0)
 
