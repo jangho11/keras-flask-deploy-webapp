@@ -30,9 +30,9 @@ app = Flask(__name__)
 
 #from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 #model = MobileNetV2(weights='imagenet')
-# instead of MobileNetV2, use ResNet50V2 [change 1]
-from tensorflow.keras.applications.resnet_v2 import ResNet50V2, preprocess_input as resnet_preprocess
-model = ResNet50V2(weights='imagenet')
+# instead of MobileNetV2, use ResNet50V2 [change 1], Now EfficientNetB0 [change 2]
+from tensorflow.keras.applications.efficientnet import EfficientNetB0, preprocess_input as efficientnet_preprocess
+model = EfficientNetB0(weights='imagenet')
 
 print('Model loaded. Check http://127.0.0.1:5000/')
 
@@ -60,7 +60,7 @@ def model_predict(img, model):
     # otherwise, it won't make correct prediction!
     
     #x = preprocess_input(x, mode='tf') -> [change 2]
-    x = resnet_preprocess(x)
+    x = efficientnet_preprocess(x)
     
     preds = model.predict(x)
     return preds
