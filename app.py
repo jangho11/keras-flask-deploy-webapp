@@ -93,12 +93,7 @@ def predict():
         # Validate that image data key exists
         if 'data' not in request.json:
             return jsonify(error="No image data found"), 400
-        # Check file type from base64 header before conversion
-        # base64 string looks like: "data:image/jpeg;base64,..."
-        ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
-        img_data = request.json.get('data', '')
-        if not any(mime in img_data for mime in ALLOWED_MIME_TYPES):
-            return jsonify(error="Invalid file type. Only PNG, JPEG, GIF, WEBP allowed"), 400
+       
         # Attempt to convert base64 string to PIL image
         try:
             img = base64_to_pil(request.json)
