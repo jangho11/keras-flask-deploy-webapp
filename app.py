@@ -22,7 +22,16 @@ from util import base64_to_pil
 
 # Declare a flask app
 app = Flask(__name__)
+# Limit max upload size to 16MB to prevent DoS attacks
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+# Whitelist of allowed image file extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    # Check if the file extension is in the allowed list
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # You can use pretrained model from Keras
 # Check https://keras.io/applications/
@@ -76,13 +85,49 @@ def index():
 def predict():
     if request.method == 'POST':
         # Get the image from post request
-        img = base64_to_pil(request.json)
+        #img = base64_to_pil(request.json)
+        # Validate that JSON data exists in the request
+        if not request.json:
+            return jsonify(error="No input data provided"), 400
 
+        # Extract base64 string from JSON
+        img_base64 = request.json
+
+        # Validate it is a string
+        if not isinstance(img_base64, str):
+            return jsonify(error="Invalid input format"), 400
+
+        # Validate file type from base64 header
+        ALLOWED_MIME_TYPES = ['data:image/png', 'data:image/jpeg',
+                       'data:image/gif', 'data:image/webp']
+        if not any(img_base64.startswith(mime) for mime in ALLOWED_MIME_TYPES):
+            return jsonify(error="Invalid file type. Only PNG, JPEG, GIF, WEBP allowed"), 400
+
+        # Attempt to convert base64 string to PIL image
+        try:
+            img = base64_to_pil(img_base64)
+        except Exception:
+            return jsonify(error="Invalid image format"), 400
+
+        # Validate image is not None
+        if img is None:
+            return jsonify(error="Could not process image"), 400
+
+
+
+        
         # Save the image to ./uploads
         # img.save("./uploads/image.png")
 
         # Make prediction
-        preds = model_predict(img, model)
+        # preds = model_predict(img, model)
+        try:
+            preds = model_predict(img, model)
+        except Exception:
+            return jsonify(error="Prediction failed"), 500
+        
+
+
 
         # Process your result for human
         pred_proba = "{:.3f}".format(np.amax(preds))    # Max probability
@@ -107,7 +152,11 @@ def predict():
 
     return None
 
-
+# Handle file size exceeded error
+@app.errorhandler(413)
+def too_large(e):
+    return jsonify(error="File too large. Maximum size is 16MB"), 413
+    
 if __name__ == '__main__':
     # app.run(port=5002, threaded=False)
 
