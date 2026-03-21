@@ -107,8 +107,11 @@ def predict():
         # Validate image color mode is RGB or RGBA
         if img.mode not in ['RGB', 'RGBA']:
             return jsonify(error="Invalid image mode"), 400
-
         
+        # Validate that the file is actually an image (not PDF, exe, etc.)
+        ALLOWED_FORMATS = {'PNG', 'JPEG', 'GIF', 'WEBP'}
+        if img.format not in ALLOWED_FORMATS:
+            return jsonify(error="Invalid file type. Only PNG, JPEG, GIF, WEBP allowed"), 400
         
 
         # Save the image to ./uploads
