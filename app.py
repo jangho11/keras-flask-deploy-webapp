@@ -22,6 +22,15 @@ from util import base64_to_pil
 
 # Declare a flask app
 app = Flask(__name__)
+# input validation max 16MB to prevent DoS attack
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+# Whitelist of allowed image file extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    # Check if the file extension is in the allowed list
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 # You can use pretrained model from Keras
@@ -76,13 +85,42 @@ def index():
 def predict():
     if request.method == 'POST':
         # Get the image from post request
-        img = base64_to_pil(request.json)
+        # img = base64_to_pil(request.json)
+        # Validate that JSON data exists in the request
+        if not request.json:
+            return jsonify(error="No input data provided"), 400
+
+        # Validate that image data key exists
+        if 'data' not in request.json:
+            return jsonify(error="No image data found"), 400
+
+        # Attempt to convert base64 string to PIL image
+        try:
+            img = base64_to_pil(request.json)
+        except Exception:
+            return jsonify(error="Invalid image format"), 400
+
+        # Validate image is not None
+        if img is None:
+            return jsonify(error="Could not process image"), 400
+
+        # Validate image color mode is RGB or RGBA
+        if img.mode not in ['RGB', 'RGBA']:
+            return jsonify(error="Invalid image mode"), 400
+
+        
+        
 
         # Save the image to ./uploads
         # img.save("./uploads/image.png")
 
         # Make prediction
-        preds = model_predict(img, model)
+        #preds = model_predict(img, model)
+        # Wrap prediction in try/except to prevent server crash
+        try:
+            preds = model_predict(img, model)
+        except Exception:
+            return jsonify(error="Prediction failed"), 500
 
         # Process your result for human
         pred_proba = "{:.3f}".format(np.amax(preds))    # Max probability
