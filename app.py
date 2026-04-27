@@ -10,8 +10,7 @@ from gevent.pywsgi import WSGIServer
 import tensorflow as tf
 from tensorflow import keras
 
-#from tensorflow.keras.applications.imagenet_utils import preprocess_input, decode_predictions
-from tensorflow.keras.applications.imagenet_utils import decode_predictions
+from tensorflow.keras.applications.imagenet_utils import decode_predictions, preprocess_input
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 
@@ -37,8 +36,8 @@ def allowed_file(filename):
 # Check https://keras.io/applications/
 # or https://www.tensorflow.org/api_docs/python/tf/keras/applications
 
-#from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
-#model = MobileNetV2(weights='imagenet')
+# from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
+# model = MobileNetV2(weights='imagenet')
 # instead of MobileNetV2, use ResNet50V2 [change 1], Now EfficientNetB0 [change 2]
 from tensorflow.keras.applications.efficientnet import EfficientNetB0, preprocess_input as efficientnet_preprocess
 model = EfficientNetB0(weights='imagenet')
@@ -56,19 +55,19 @@ MODEL_PATH = 'models/your_model.h5'
 
 
 def model_predict(img, model):
+    print(model.input_shape)
     width, height = model.input_shape[1], model.input_shape[2]
     img = img.resize((width, height))
 
     # Preprocessing the image
     x = image.img_to_array(img)
-    print(x.shape)
     # x = np.true_divide(x, 255)
     x = np.expand_dims(x, axis=0)
 
     # Be careful how your trained model deals with the input
     # otherwise, it won't make correct prediction!
     
-    #x = preprocess_input(x, mode='tf') -> [change 2]
+    # x = preprocess_input(x, mode='tf') #-> [change 2]
     x = efficientnet_preprocess(x)
     
     preds = model.predict(x)
